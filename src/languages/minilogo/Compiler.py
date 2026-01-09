@@ -2,22 +2,20 @@ from antlr4 import *
 
 if "." in __name__:
     from .syntax.LanguageParser import LanguageParser
-    from .instructions.Value import Value
     from .instructions.Color import Color
     from .instructions.Move import Move
     from .instructions.StartDrawing import StartDrawing
     from .instructions.StopDrawing import StopDrawing
-    
 else:
     from languages.minilogo.syntax.LanguageParser import LanguageParser
-    from languages.minilogo.instructions.Value import Value
     from languages.minilogo.instructions.Color import Color
     from languages.minilogo.instructions.Move import Move
     from languages.minilogo.instructions.StartDrawing import StartDrawing
     from languages.minilogo.instructions.StopDrawing import StopDrawing
-    
+
+from src.instructions.Value import Value
 from src.Bytecode import Bytecode
-    
+
 class Compiler(ParseTreeVisitor):
 
     def visitMove(self, ctx:LanguageParser.MoveContext):

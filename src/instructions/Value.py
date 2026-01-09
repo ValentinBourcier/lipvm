@@ -6,5 +6,5 @@ class Value:
     def __str__(self):
         return 'Value ' + str(self._value)
 
-    def execute(self, stack, global_variables, heap):
-        stack.push(self._value)
+    def execute(self, environment):
+        environment.stack.push(self._value)

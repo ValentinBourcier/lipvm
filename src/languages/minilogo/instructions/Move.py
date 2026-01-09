@@ -3,15 +3,16 @@ class Move:
     def __str__(self):
         return 'Move'
 
-    def execute(self, stack, global_variables, heap):
-        position = (stack.pop(), stack.pop())
-        if 'drawing' in global_variables and global_variables['drawing'] and 'position' in global_variables:
+    def execute(self, environment):
+        position = (environment.stack.pop(), environment.stack.pop())
 
-            line = (global_variables['position'] , position, global_variables['color'])
+        if 'drawing' in environment.globals and environment.globals['drawing'] and 'position' in environment.globals:
 
-            if 'lines' in heap:
-                heap['lines'].append(line)
+            line = (environment.globals['position'] , position, environment.globals['color'])
+
+            if 'lines' in environment.heap:
+                environment.heap['lines'].append(line)
             else:
-                heap['lines'] = [line]
+                environment.heap['lines'] = [line]
 
-        global_variables['position'] = position
+        environment.globals['position'] = position

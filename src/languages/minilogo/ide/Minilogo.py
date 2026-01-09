@@ -1,12 +1,13 @@
 from tkinter import *
 from tkinter import ttk
 
+from src.Environment import Environment
+from src.Execution import Execution
 from src.LipVM import LipVM
 
 class Minilogo(Tk):
 
     def __init__(self, *args, **kwargs):        
-
         super().__init__(*args, **kwargs)
 
         self.title("Minilogo")
@@ -17,6 +18,8 @@ class Minilogo(Tk):
         self.layout()
 
         self._vm = LipVM()
+
+        self._execution = None
         
     def components(self):
         self._panes = ttk.PanedWindow(self, orient=HORIZONTAL)
@@ -32,11 +35,13 @@ class Minilogo(Tk):
         self._canvas = Canvas(self._preview_pane, bg="white")
         self._buttons = Frame(self._preview_pane)
 
+        self._slider = Scale(self._buttons, from_=0, to=200, orient=HORIZONTAL, state=NORMAL, command=self.navigate)
         self._start_button = Button(self._buttons, text="Run", command=self.start)
-        self._step_button = Button(self._buttons, text="Step", command=self.step)
+        self._step_forward_button = Button(self._buttons, text="Step forward", command=self.step_forward)
+        self._step_backward_button = Button(self._buttons, text="Step backward", command=self.step_backward)
 
     def bindings(self):
-        self._code.bind("<KeyRelease>", self.update_code)
+        self._code.bind("<KeyRelease>", self.compile)
 
     def layout(self):
         # Main layout 
@@ -50,33 +55,54 @@ class Minilogo(Tk):
         self._buttons.pack(fill=X, expand=False)
         
         # Buttons layout
+        self._buttons.grid_rowconfigure(0, weight=1)
+        self._buttons.grid_rowconfigure(1, weight=1)
+
         self._buttons.grid_columnconfigure(0, weight=1)
         self._buttons.grid_columnconfigure(1, weight=1)
+        self._buttons.grid_columnconfigure(2, weight=1)
 
-        self._start_button.grid(row=0, column=0, sticky='nesw')
-        self._step_button.grid(row=0, column=1, sticky='nesw')
+        self._slider.grid(row=0, column=0, columnspan=3, sticky='nesw')
+        self._start_button.grid(row=1, column=0, sticky='nesw')
+        self._step_forward_button.grid(row=1, column=1, sticky='nesw')
+        self._step_backward_button.grid(row=1, column=2, sticky='nesw')
 
     def code(self):
         return self._code.get('1.0', END)
 
-    def update_code(self, event):
-        self._vm.load_code(self.code())
+    def compile(self, event):
+        self._execution = self._vm.compile_code(self.code())
+        self._slider.config(state=DISABLED)
+        self._canvas.delete("all")
 
     def start(self):
-        self._vm.start()
+        self._execution.start()
         self.draw()
 
-    def step(self):
-        self._vm.step()
+        self._slider.config(state=NORMAL, to=len(self._execution.history))
+
+    def step_forward(self):
+        self._execution.step_forward()
         self.draw()
-    
+
+    def step_backward(self):
+        self._execution.step_backward()
+        self.draw()
+
+    def navigate(self, event):
+        if self._execution.environment.ip > int(event):
+            self.step_backward()
+        
+        if self._execution.environment.ip < int(event):
+            self.step_forward()
+
     def draw(self):
 
         self._canvas.delete("all")
-        state = self._vm.state()
+        state = self._execution.environment.heap
 
-        if 'heap' in state and 'lines' in state['heap']:
-            for line in state['heap']['lines']:
+        if 'lines' in state:
+            for line in state['lines']:
                 self._canvas.create_line(
                     line[0][0], 
                     line[0][1], 
