@@ -14,11 +14,13 @@ else:
     from languages.minilogo.instructions.StopDrawing import StopDrawing
 
 from src.instructions.Value import Value
+from src.instructions.Snapshot import Snapshot
 from src.Bytecode import Bytecode
 
 class Compiler(ParseTreeVisitor):
 
     def visitMove(self, ctx:LanguageParser.MoveContext):
+        self._bytecode.add(Snapshot())
         self._bytecode.add(Value(int(ctx.y.text)))
         self._bytecode.add(Value(int(ctx.x.text)))
         self._bytecode.add(Move())

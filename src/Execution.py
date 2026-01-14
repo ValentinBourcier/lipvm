@@ -2,6 +2,8 @@ from .Environment import Environment
 from .Bytecode import Bytecode
 from .Stack import Stack
 
+from .instructions.Snapshot import Snapshot
+
 from copy import deepcopy
 
 class Execution:
@@ -40,8 +42,13 @@ class Execution:
         if self.ended():
             raise Exception("Cannot step forward an execution that has ended")
 
-        self._bytecode.instructions[self._environment.ip].execute(self._environment)
-        self._history.append(deepcopy(self._environment))
+        instruction = self._bytecode.instructions[self._environment.ip]
+        
+        if type(instruction) is Snapshot:
+            self._history.append(deepcopy(self._environment))
+        else:
+            instruction.execute(self._environment)
+        
         self._environment.ip += 1
 
     def step_backward(self):
